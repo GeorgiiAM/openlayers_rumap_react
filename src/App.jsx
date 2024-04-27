@@ -1,6 +1,6 @@
 import './App.css'
 import Layout from './components/Layout/Layout';
-import NotFound from './components/NotFound/NotFound';
+import ErrorPage from './components/ErrorPage/ErrorPage';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 
 function App() {
@@ -9,10 +9,7 @@ function App() {
     {
       path: '/',
       element: <Layout />,
-    },
-    {
-      path: '*',
-      element: <NotFound />,
+      errorElement: <ErrorPage />,
     },
   ],
     {
