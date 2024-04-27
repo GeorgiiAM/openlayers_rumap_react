@@ -10,6 +10,9 @@ import { MultiPoint } from 'ol/geom';
 import { Draw, Modify } from 'ol/interaction';
 import { doubleClick } from 'ol/events/condition';
 import { Control } from 'ol/control.js';
+import { getAreaStatisticsByCoordinates } from '../services/ApiService.js'
+import Overlay from 'ol/Overlay';
+import { GUID } from '../../config.js';
 
 
 const MapComponent = () => {
@@ -51,7 +54,7 @@ const MapComponent = () => {
             layers: [
                 new TileLayer({
                     source: new XYZ({
-                        url: 'http://tile.digimap.ru/rumap/{z}/{x}/{y}.png?guid=93BC6341-B35E-4B34-9DFE-26796F64BBB7'
+                        url: `http://tile.digimap.ru/rumap/{z}/{x}/{y}.png?guid=${GUID}`
                     })
                 })
             ],
@@ -76,11 +79,7 @@ const MapComponent = () => {
             stopClick: true
         });
 
-        draw.on('drawend', event => {
-            map.removeInteraction(draw);
-        });
-
-        let modifyStyle = new Style({
+        const modifyStyle = new Style({
             image: new Circle({
                 radius: 10,
                 fill: new Fill({
@@ -96,6 +95,75 @@ const MapComponent = () => {
             style: modifyStyle
         });
 
+        draw.on('drawend', event => {
+            const feature = event.feature;
+
+            getAreaStatisticsAndShowPopup(feature);
+
+            map.removeInteraction(draw);
+        });
+
+        modify.on('modifyend', function (event) {
+            const modifiedFeature = event.features.getArray()[0];
+
+            if (modifiedFeature && modifiedFeature.getGeometry().getType() === 'Polygon') {
+                getAreaStatisticsAndShowPopup(modifiedFeature);
+            }
+        });
+
+        const getAreaStatisticsAndShowPopup = (feature) => {
+            const coordinates = feature.getGeometry().getCoordinates()[0];
+            const transformedCoordinates = coordinates.map((element) => transform(element, 'EPSG:3857', 'EPSG:4326'));
+            const centerPolygonPoint = feature.getGeometry().getInteriorPoint().getCoordinates();
+            let message = 'Ошибка';
+
+            getAreaStatisticsByCoordinates(transformedCoordinates).then((data) => {
+                if (data) {
+                    if ('population_rs' in data) {
+                        const formattedNumber = data.population_rs.toLocaleString('ru-RU', { style: 'decimal' });
+                        message = `Население на данной территории: ${formattedNumber}`;
+                    }
+                    else {
+                        message = `Ошибка: ${data.message}. ${data.verboseMessage}`
+                    }
+                }
+                showPopup(centerPolygonPoint, message);
+            }).catch(error => {
+                console.error('Error:', error);
+                message = `Ошибка: ${error}`;
+                showPopup(centerPolygonPoint, message);
+            });
+        }
+
+        const showPopup = (centerPolygonPoint, message) => {
+            removePopups(map);
+
+            const popupElement = document.createElement('div');
+            popupElement.className = 'popup';
+            popupElement.innerHTML = `<div id="popup" class="ol-popup">
+                                         <div id="popup-closer" class="popup-closer">✖</div>
+                                         <div>${message}</div>
+                                      </div>`;
+
+            const popup = new Overlay({
+                element: popupElement,
+                positioning: 'bottom-center',
+                stopEvent: false,
+            });
+
+            map.addOverlay(popup);
+            popup.setPosition(centerPolygonPoint);
+
+            document.getElementById('popup-closer').addEventListener('click', () => {
+                map.removeOverlay(popup);
+                map.removeInteraction(draw);
+                map.removeInteraction(modify);
+                drawingEnabled = false;
+                createPolygonButton.style.backgroundColor = 'rgb(252 252 252)';
+                source.clear();
+            });
+        };
+
         const createPolygonButton = document.createElement('div');
         createPolygonButton.className = 'createPolygonButton'
 
@@ -105,6 +173,7 @@ const MapComponent = () => {
                 createPolygonButton.style.backgroundColor = 'rgb(252 252 252)';
                 map.removeInteraction(draw);
                 map.removeInteraction(modify);
+                removePopups(map);
                 drawingEnabled = false;
                 source.clear();
             } else {
@@ -129,7 +198,14 @@ const MapComponent = () => {
     return <>
         <div id="map"></div>
     </>
+};
 
+const removePopups = (map) => {
+    const overlays = map.getOverlays().getArray();
+
+    overlays.forEach(overlay => {
+        map.removeOverlay(overlay);
+    });
 };
 
 export default MapComponent;
