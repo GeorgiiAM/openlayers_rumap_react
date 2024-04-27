@@ -5,6 +5,7 @@ import { Tile as TileLayer, Vector as VectorLayer } from 'ol/layer';
 import { Vector as VectorSource } from 'ol/source';
 import XYZ from 'ol/source/XYZ';
 import { transform } from 'ol/proj';
+import { Draw, Modify } from 'ol/interaction';
 
 
 const MapComponent = () => {
@@ -31,6 +32,15 @@ const MapComponent = () => {
             source: source
         });
         map.addLayer(vector);
+
+        const draw = new Draw({
+            source: source,
+            type: 'Polygon'
+        });
+        map.addInteraction(draw);
+
+        const modify = new Modify({ source: source });
+        map.addInteraction(modify);
 
         return () => {
             map.setTarget(null);
