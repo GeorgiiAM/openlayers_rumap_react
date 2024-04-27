@@ -16,7 +16,7 @@ function App() {
     },
   ],
     {
-      basename: "/TestTaskValantis/",
+      basename: "/openlayers_rumap_react/",
     }
   );
 
