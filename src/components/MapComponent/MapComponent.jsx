@@ -10,9 +10,10 @@ import { MultiPoint } from 'ol/geom';
 import { Draw, Modify } from 'ol/interaction';
 import { doubleClick } from 'ol/events/condition';
 import { Control } from 'ol/control.js';
-import { getAreaStatisticsByCoordinates } from '../services/ApiService.js'
+import { getAreaStatisticsByCoordinates } from '../../services/ApiService.js'
 import Overlay from 'ol/Overlay';
-import { GUID } from '../../config.js';
+import { GUID } from '../../../config.js';
+import './MapComponent.css'
 
 
 const MapComponent = () => {

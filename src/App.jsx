@@ -1,16 +1,23 @@
 import './App.css'
-import MapComponent from './components/MapComponent';
+import Layout from './components/Layout/Layout';
+import NotFound from './components/NotFound/NotFound';
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 
 function App() {
 
-  return (
-    <>
-      <header>Сервис подсчета населения на
-        произвольно заданной территории России.</header>
-      <MapComponent />
-      <footer><div> &copy; Antoshchenko Georgii 2024</div></footer>
+  const router = createBrowserRouter([
+    {
+      path: '/',
+      element: <Layout />,
+    },
+    {
+      path: '*',
+      element: <NotFound />,
+    },
+  ]);
 
-    </>
+  return (
+    <RouterProvider router={router} />
   )
 }
 
