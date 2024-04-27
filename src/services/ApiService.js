@@ -15,7 +15,7 @@ export const getAreaStatisticsByCoordinates = async (coordinates) => {
         "type": "FeatureCollection"
     }
 
-    const url = `http://gis01.rumap.ru/4898/areaStatistics?guid=${GUID}&geometry=1&geojson=${JSON.stringify(geojson)}`;
+    const url = `https://gis01.rumap.ru/4898/areaStatistics?guid=${GUID}&geometry=1&geojson=${JSON.stringify(geojson)}`;
 
     const response = await fetch(url);
     const data = await response.json();
