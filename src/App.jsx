@@ -8,7 +8,7 @@ function App() {
       <header>Сервис подсчета населения на
         произвольно заданной территории России.</header>
       <MapComponent />
-      <footer><div> &copy; Antoshchenko Georgii 2023</div></footer>
+      <footer><div> &copy; Antoshchenko Georgii 2024</div></footer>
 
     </>
   )
